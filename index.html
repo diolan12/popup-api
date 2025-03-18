@@ -2,8 +2,9 @@
 <html>
 
 <head>
+    <meta charset="utf-8">
     <meta name="robots" content="noindex">
-    <title>Documentation</title>
+    <title>POPUP-API Documentation</title>
     <!--Import Google Icon Font-->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- Compiled and minified CSS -->
@@ -208,14 +209,14 @@ window.addEventListener("message", (event) => {
         <div class="container">
             <div class="row">
                 <div class="l6 s12">
-                    <h5>PopCam Docs</h5>
+                    <h5>Popup API</h5>
                     <p>Popup API documentation</p>
                 </div>
             </div>
         </div>
         <div class="footer-copyright">
             <div class="container">
-                &#169; 2023 Copyright RNO T-Reg 5
+                &#169; 2024 Copyright TIF Territory 3
                 <a class="right" href="/">Home</a>
             </div>
         </div>
@@ -236,28 +237,28 @@ window.addEventListener("message", (event) => {
 
         popupCamera.addEventListener('click', (evt) => {
             console.log('click', evt);
-            popcam = window.open('https://appv.cloud/popcam/popcam.html', 'popcam', params);
+            popcam = window.open('popcam.html', 'popcam', params);
         })
         popupQrcode.addEventListener('click', (evt) => {
             console.log('click', evt);
-            popcam = window.open('https://appv.cloud/popcam/popqr.html', 'popcam', params);
+            popcam = window.open('popqr.html', 'popcam', params);
         })
         popupLocation.addEventListener('click', (evt) => {
             console.log('click', evt);
-            popcam = window.open('https://appv.cloud/popcam/poploc.html', 'popcam', params);
+            popcam = window.open('poploc.html', 'popcam', params);
         })
 
         window.addEventListener("message", (event) => {
-            console.log('message', event)
-            if (event.origin !== "https://appv.cloud") return; // ip camera
+            // console.log('message', event)
+            // if (event.origin !== "https://appv.cloud") return; // ip camera
             switch (event.data.type) {
-                case 'capture':
+                case 'camera':
                     parentOutput.src = event.data.payload;
                     break;
-                case 'reader':
+                case 'qr-reader':
                     parentQrcode.value = event.data.payload;
                     break;
-                case 'location':
+                case 'geolocation':
                     let location = event.data.payload
                     parentMap.setView([location.coords.latitude, location.coords.longitude], 15)
                     if (parentMarker) {
