@@ -114,7 +114,7 @@ let parentOutput = document.getElementById("parent-img");
 window.addEventListener("message", (event) => {
     if (event.origin !== "https://appv.cloud") return; // ip camera
     console.log('message', event)
-    if (event.data.type == 'capture') {
+    if (event.data.type == 'camera') {
         parentOutput.src = event.data.payload;
     }
 }, false,);
@@ -154,7 +154,7 @@ let parentQrcode = document.getElementById("parent-text");
 window.addEventListener("message", (event) => {
     if (event.origin !== "https://appv.cloud") return; // ip camera
     console.log('message', event)
-    if (event.data.type == 'reader') {
+    if (event.data.type == 'qr-reader') {
         parentQrcode.src = event.data.payload;
     }
 }, false,);
@@ -193,7 +193,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 window.addEventListener("message", (event) => {
     if (event.origin !== "https://appv.cloud") return; // ip camera
     console.log('message', event)
-    if (event.data.type == 'location') {
+    if (event.data.type == 'geolocation') {
         let location = event.data.payload
         map.setView([location.coords.latitude, location.coords.longitude], 15)
     }
