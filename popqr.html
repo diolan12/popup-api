@@ -56,8 +56,8 @@
         <div id="action-capturable" class="col s12 row hide gap-5">
             <button id="flip-camera" class="col s6 waves-effect waves-light btn teal"><i
                     class="material-icons">cameraswitch</i></button>
-            <button id="click-photo" class="col s6 waves-effect waves-light btn blue darken-1"><i
-                    class="material-icons">photo_camera</i></button>
+            <button id="torch-camera" class="col s6 waves-effect waves-light btn yellow darken-3"><i
+                    id="torch-camera-icon" class="material-icons">flash_on</i></button>
         </div>
     </div>
     <script>
@@ -66,7 +66,8 @@
         let cameraButton = document.querySelector("#start-camera");
         let capturable = document.getElementById('action-capturable')
         let flipButton = document.querySelector("#flip-camera");
-        let captureButton = document.querySelector("#click-photo");
+        let torchButton = document.getElementById("torch-camera");
+        let torchIcon = document.getElementById("torch-camera-icon");
         let textResult = document.getElementById("result");
         let video = document.querySelector("#video");
         let canvas = document.querySelector("#qr-canvas");
@@ -76,6 +77,19 @@
         let runnable;
 
         cameraButton.addEventListener('click', setupCamera);
+        torchButton.addEventListener('click', async function () {
+            torchOn = !torchOn
+            stream?.getTracks().forEach(function (track) {
+                track.applyConstraints({
+                    advanced: [{ torch: torchOn }]
+                });
+            });
+            if (!torchOn) {
+                torchIcon.textContent = 'flash_on'
+            } else {
+                torchIcon.textContent = 'flash_off'
+            }
+        });
         flipButton.addEventListener('click', async function () {
             frontFacing = !frontFacing
             setupCamera()
