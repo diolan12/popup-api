@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <title>POPQR</title>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@materializecss/materialize@2.0.2-alpha/dist/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/@materializecss/materialize@2.0.2-alpha/dist/js/materialize.min.js"></script>
+
+    <script src="qr_pack.js"></script>
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        #reader-stat {
+            position: fixed;
+            padding: 8px;
+            background-color: #00000080;
+            color: aliceblue;
+        }
+    </style>
+</head>
+
+<body class="container">
+    <br>
+    <br>
+    <div class="row" style="gap: 5px;">
+        <div class="col s12">
+            <span id="reader-stat">0</span>
+            <video id="video" width="640" height="480" autoplay class="responsive-video"></video>
+            <canvas id="qr-canvas" width="640" height="480" class="hide" style="width: 100%"></canvas>
+        </div>
+        <div class="col s12">
+            <h6 id="text-note" class="center-align">Please allow access to camera</h6>
+        </div>
+        <div class="input-field col s12 m6 offset-m3">
+            <i class="material-icons suffix tooltipped" onclick="copyToClipboard()" data-position="right"
+                data-tooltip="Copy to clipboard">content_copy</i>
+            <input id="result" type="text" class="validate">
+            <label for="result">Result</label>
+        </div>
+        <button id="start-camera" class="col s12 waves-effect waves-light btn blue darken-1"><i
+                class="material-icons">camera</i></button>
+        <div id="action-capturable" class="col s12 row hide" style="gap: 5px;">
+            <button id="flip-camera" class="col s6 waves-effect waves-light btn teal"><i
+                    class="material-icons">cameraswitch</i></button>
+            <button id="click-photo" class="col s6 waves-effect waves-light btn blue darken-1"><i
+                    class="material-icons">photo_camera</i></button>
+        </div>
+    </div>
+    <script>
+        function beep() {
+            var snd = new Audio("data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");
+            snd.play();
+        }
+        const allowedOrigin = [
+            'https://appv.cloud',
+            'http://10.60.170.174',
+        ]
+        let readerStat = document.getElementById('reader-stat')
+
+        let cameraButton = document.querySelector("#start-camera");
+        let capturable = document.getElementById('action-capturable')
+        let flipButton = document.querySelector("#flip-camera");
+        let captureButton = document.querySelector("#click-photo");
+        let textResult = document.getElementById("result");
+        let video = document.querySelector("#video");
+        let canvas = document.querySelector("#qr-canvas");
+        let qrReader = window.qrcode;
+        let stream;
+        let frontFacing = false;
+        let runnable;
+
+        cameraButton.addEventListener('click', setupCamera);
+        flipButton.addEventListener('click', async function () {
+            frontFacing = !frontFacing
+            setupCamera()
+        });
+
+        function tick() {
+            canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+            scan()
+        }
+
+        function scan() {
+            try {
+                qrReader.decode();
+            } catch (e) {
+                if (typeof e ==  'string'){
+                    readerStat.innerText = e.match(/[0-9]/g)[0]
+                    console.error(e);
+                }
+            }
+        }
+
+        async function setupCamera() {
+            closeMedia()
+            console.log(frontFacing ? 'user' : 'environment');
+            clearInterval(runnable)
+            runnable = setInterval(tick, 500)
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: frontFacing ? 'user' : 'environment'
+                },
+                audio: false
+            });
+            video.setAttribute("playsinline", true);
+            video.srcObject = stream;
+
+            video.classList.remove('hide')
+            cameraButton.classList.add('hide')
+            capturable.classList.remove('hide')
+        }
+
+        function closeMedia() {
+            stream?.getTracks().forEach(function (track) {
+                track.stop();
+            });
+        }
+
+        //unused
+        captureButton.addEventListener('click', function () {
+            tick()
+        });
+
+        qrReader.callback = function (res) {
+            if (res) {
+                beep()
+                clearInterval(runnable)
+                closeMedia()
+                let data = {
+                    type: 'reader',
+                    payload: res
+                }
+                window.opener?.postMessage(data, '*'); //or false
+                textResult.value = res
+                console.log(res);
+
+                window.close()
+            }
+        };
+
+        function copyToClipboard() {
+            // Get the text field
+
+            if (textResult.value == '') return;
+
+            // Select the text field
+            textResult.select();
+            textResult.setSelectionRange(0, 99999); // For mobile devices
+
+            // Copy the text inside the text field
+            navigator.clipboard.writeText(textResult.value);
+
+            // Alert the copied text
+            M.toast({ text: 'Text copied to clipboard: ' + textResult.value })
+            // alert("Copied the text: " + copyText.value);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            M.AutoInit()
+            if (window.opener) {
+                console.log(window.opener.location.hostname);
+                if (!allowedOrigin.includes(window.opener.origin)) {
+                    window.close();
+                    return;
+                }
+            } else {
+                console.info('Opened from non popup');
+            }
+            cameraButton.click()
+        }, false);
+    </script>
+</body>
+
+</html>
