@@ -174,7 +174,7 @@ window.addEventListener("message", (event) => {
                         <p class="flow-text light">Calling popup window</p>
                         <pre class="code">
                             <code>
-let params = `scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=600,height=800`;let params = `scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=600,height=800`;
+let params = `scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=600,height=800`;
 let popcam;
 popcam = window.open('https://appv.cloud/popcam/geolocation.html', 'icam', params);
                             </code>
@@ -237,15 +237,15 @@ window.addEventListener("message", (event) => {
 
         popupCamera.addEventListener('click', (evt) => {
             console.log('click', evt);
-            popcam = window.open('popcam.html', 'popcam', params);
+            popcam = window.open('camera.html', 'popcam', params);
         })
         popupQrcode.addEventListener('click', (evt) => {
             console.log('click', evt);
-            popcam = window.open('popqr.html', 'popcam', params);
+            popcam = window.open('qr-reader.html', 'popcam', params);
         })
         popupLocation.addEventListener('click', (evt) => {
             console.log('click', evt);
-            popcam = window.open('poploc.html', 'popcam', params);
+            popcam = window.open('geolocation.html', 'popcam', params);
         })
 
         window.addEventListener("message", (event) => {
