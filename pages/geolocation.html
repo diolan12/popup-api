@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Popup Location</title>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@materializecss/materialize@2.0.2-alpha/dist/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/@materializecss/materialize@2.0.2-alpha/dist/js/materialize.min.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="assets/js/core.js"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        #map {
+            height: 480px;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div class="row gap-5">
+            <div id="map" class="col s12"></div>
+            <div class="col s12">
+                <div id="preloader" class="progress hide">
+                    <div class="indeterminate"></div>
+                </div>
+                <h6 id="text-output" class="center-align">Please allow access to location</h6>
+            </div>
+        </div>
+    </main>
+    <footer class="page-footer white">
+        <div class="footer-copyright white">
+            <div class="container">
+                <div class="row">
+                    <button type="button" id="btn-locate" class="col s12 waves-effect waves-light btn blue darken-1">
+                        <i class="material-icons">my_location</i>
+                    </button>
+                    <div id="action-capturable" class="col s12 row gap-5 hide">
+                        <button type="button" id="btn-relocate" class="col s6 waves-effect waves-light btn teal"><i
+                                class="material-icons">my_location</i></button>
+                        <button type="button" id="btn-locate-done" class="col s6 waves-effect waves-light btn blue darken-1"><i
+                                class="material-icons">where_to_vote</i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script>
+        const locateButton = document.getElementById("btn-locate");
+        const actionGroup = document.getElementById('action-capturable')
+        const relocateButton = document.getElementById("btn-relocate");
+        const submitButton = document.getElementById("btn-locate-done");
+        const textOutput = document.getElementById('text-output')
+        const preloader = document.getElementById("preloader");
+        const map = L.map('map').setView([-0.7893, 117.9313], 4);
+        let marker, radius;
+        let currentPosition, currentGeocode;
+
+        const xhr = new XMLHttpRequest()
+        xhr.onload = function (e) {
+            // Check if the request was a success
+            if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                // Get and convert the responseText into JSON
+                var response = JSON.parse(xhr.responseText);
+                console.log(response);
+                currentGeocode = response
+            }
+            displayText()
+        }
+        xhr.onerror = function (e) {
+            displayText()
+        }
+        function displayText() {
+            textOutput.innerHTML = `${currentPosition.coords.latitude}, ${currentPosition.coords.longitude}<br>${accuracyText(currentPosition.coords.accuracy)}`
+            if (currentGeocode) {
+                textOutput.innerHTML += `<br>${currentGeocode.locality}, ${currentGeocode.city}, ${currentGeocode.principalSubdivision}, ${currentGeocode.countryName}`
+            }
+            preloader.classList.add('hide')
+            actionGroup.classList.remove('hide')
+            if (!marker) {
+                marker = L.marker([currentPosition.coords.latitude, currentPosition.coords.longitude]).addTo(map)
+                radius = L.circle([currentPosition.coords.latitude, currentPosition.coords.longitude], {
+                    color: 'skyblue',
+                    fillColor: 'lightblue',
+                    fillOpacity: 0.6,
+                    radius: currentPosition.coords.accuracy
+                }).addTo(map)
+            } else {
+                marker.setLatLng([currentPosition.coords.latitude, currentPosition.coords.longitude])
+                radius.setLatLng([currentPosition.coords.latitude, currentPosition.coords.longitude])
+                radius.setRadius(currentPosition.coords.accuracy)
+            }
+            map.flyToBounds(radius.getBounds())
+        }
+        function humanReadableDistance(meters, unitIndex = 0) {
+            const units = ["m", "km", "Mm", "Gm", "Tm", "Pm", "Em", "Zm", "Ym"]; // Meter, Kilometer, Megameter, etc.
+
+            if (meters < 1000 || unitIndex >= units.length - 1) {
+                return `${meters.toFixed(2)} ${units[unitIndex]}`;
+            } else {
+                return humanReadableDistance(meters / 1000, unitIndex + 1);
+            }
+        }
+        const accuracyText = (v) => {
+            const _v = humanReadableDistance(v)
+            if (v > 100) {
+                return `<p style="color: red;">poor accuracy (${_v})</p>`;
+            } else if (v > 25) {
+                return `<p style="color: orange;">low accuracy (${_v})</p>`;
+            } else if (v > 15) {
+                return `<p style="color: blue;">good accuracy (${_v})</p>`;
+            } else { // v <= 15
+                return `<p style="color: green;">high accuracy (${_v})</p>`;
+            }
+        }
+
+        locateButton.addEventListener('click', setupMapview);
+        relocateButton.addEventListener('click', setupMapview);
+
+        const successCallback = async (position) => {
+            beep()
+            const {
+                latitude,
+                longitude,
+                accuracy
+            } = position.coords
+            geocode(latitude, longitude)
+            console.log(position);
+            currentPosition = position
+        };
+
+        const errorCallback = (error) => {
+            console.error(error);
+            textOutput.innerHTML = '<span class="red-text">There was an error while getting GPS location<br>Check that this site has permission to access your "location"</span>'
+            preloader.classList.add('hide')
+            currentPosition = undefined
+        };
+
+        async function setupMapview() {
+            textOutput.innerHTML = 'Getting your location...'
+            preloader.classList.remove('hide')
+
+            locateButton.classList.add('hide')
+
+            setTimeout(function () {
+                navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+            }, 800);
+        }
+
+        function geocode(latitude, longitude) {
+            xhr.open("GET", `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=id`);
+            xhr.send();
+        }
+
+        submitButton.addEventListener('click', function () {
+            if (!currentPosition) {
+                textOutput.innerHTML = 'Cannot get location'
+                return
+            }
+            const _location = {
+                coords: {
+                    accuracy: currentPosition.coords.accuracy,
+                    altitude: currentPosition.coords.altitude,
+                    altitudeAccuracy: currentPosition.coords.altitudeAccuracy,
+                    heading: currentPosition.coords.heading,
+                    latitude: currentPosition.coords.latitude,
+                    longitude: currentPosition.coords.longitude,
+                    speed: currentPosition.coords.speed,
+                },
+                timestamp: currentPosition.timestamp,
+                geocode: currentGeocode
+            }
+            dataPayload = {
+                type: 'geolocation',
+                payload: _location,
+            }
+            postOpener()
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            locateButton.click()
+            setupMapview()
+        }, false);
+    </script>
+</body>
+
+</html>

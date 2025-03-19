@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Popup QR-Reader</title>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@materializecss/materialize@2.0.2-alpha/dist/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/@materializecss/materialize@2.0.2-alpha/dist/js/materialize.min.js"></script>
+
+    <script src="assets/js/qr_pack.js"></script>
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="assets/js/core.js"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        #reader-stat {
+            position: fixed;
+            padding: 8px;
+            background-color: #00000080;
+            color: aliceblue;
+        }
+
+        #qr-canvas {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div class="row gap-5">
+            <div class="col s12">
+                <span id="reader-stat">0</span>
+                <video id="video" width="640" height="480" autoplay class="responsive-video"></video>
+                <canvas id="qr-canvas" width="640" height="480" class="hide"></canvas>
+            </div>
+            <div class="col s12">
+                <h6 id="text-output" class="center-align">Please allow access to camera</h6>
+            </div>
+        </div>
+    </main>
+    <footer class="page-footer white">
+        <div class="footer-copyright white">
+            <div class="container">
+                <div class="row gap-5">
+                    <div class="input-field col s12 m6 offset-m3">
+                        <i class="material-icons suffix tooltipped black-text" onclick="copyToClipboard()"
+                            data-position="left" data-tooltip="Copy to clipboard">content_copy</i>
+                        <input id="result" type="text" class="validate">
+                        <label for="result">Result</label>
+                    </div>
+                    <button type="button" id="start-camera"
+                        class="col s12 waves-effect waves-light btn blue darken-1"><i
+                            class="material-icons">camera</i></button>
+                    <div id="action-capturable" class="col s12 row hide gap-5">
+                        <button type="button" id="flip-camera" class="col s6 waves-effect waves-light btn teal"><i
+                                class="material-icons">cameraswitch</i></button>
+                        <button type="button" id="torch-camera"
+                            class="col s6 waves-effect waves-light btn yellow darken-3"><i id="torch-camera-icon"
+                                class="material-icons">flash_on</i></button>
+                        <button type="button" id="click-submit"
+                            class="col s12 waves-effect waves-light btn blue darken-1"><i
+                                class="material-icons">check_circle</i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script>
+        const readerStat = document.getElementById('reader-stat')
+
+        const cameraButton = document.querySelector("#start-camera");
+        const capturable = document.getElementById('action-capturable')
+        const flipButton = document.querySelector("#flip-camera");
+        const torchButton = document.getElementById("torch-camera");
+        const torchIcon = document.getElementById("torch-camera-icon");
+        const submitButton = document.querySelector("#click-submit");
+        const textOutput = document.getElementById('text-output')
+        const textResult = document.getElementById("result");
+        const video = document.querySelector("#video");
+        const canvas = document.querySelector("#qr-canvas");
+        const qrReader = window.qrcode;
+        let frontFacing = false;
+        let torchOn = false;
+        let stream, runnable;
+
+        cameraButton.addEventListener('click', setupCamera);
+        flipButton.addEventListener('click', async function () {
+            frontFacing = !frontFacing
+            setupCamera()
+        });
+        torchButton.addEventListener('click', async function () {
+            torchOn = !torchOn
+            stream?.getTracks().forEach(function (track) {
+                track.applyConstraints({
+                    advanced: [{ torch: torchOn }]
+                });
+            });
+            if (!torchOn) {
+                torchIcon.textContent = 'flash_on'
+            } else {
+                torchIcon.textContent = 'flash_off'
+            }
+        });
+        function tick() {
+            canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+            scan()
+        }
+
+        function scan() {
+            try {
+                qrReader.decode();
+            } catch (e) {
+                if (typeof e == 'string') {
+                    readerStat.innerText = e.match(/[0-9]/g)[0]
+                    console.error(e);
+                }
+            }
+        }
+
+        async function setupCamera() {
+            closeMedia()
+            console.log(frontFacing ? 'user' : 'environment');
+            clearInterval(runnable)
+            if (!runnable) runnable = setInterval(tick, 500)
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: frontFacing ? 'user' : 'environment'
+                },
+                audio: false
+            });
+            if (!stream) {
+                textOutput.innerHTML = '<span class="red-text">There was an error while getting Camera Access<br>Check that this site has permission to access your "camera"</span>'
+                return
+            }
+            textOutput.innerHTML = ''
+
+            video.setAttribute("playsinline", true);
+            video.srcObject = stream;
+
+            video.classList.remove('hide')
+            cameraButton.classList.add('hide')
+            capturable.classList.remove('hide')
+        }
+
+        function closeMedia() {
+            stream?.getTracks().forEach(function (track) {
+                track.stop();
+            });
+        }
+
+        submitButton.addEventListener('click', function () {
+            clearInterval(runnable)
+            closeMedia()
+            postOpener()
+        });
+
+        qrReader.callback = function (res) {
+            if (res) {
+                beep()
+                // clearInterval(runnable)
+                // closeMedia()
+                dataPayload = {
+                    type: 'qr-reader',
+                    payload: res
+                }
+                // window.opener?.postMessage(data, '*'); //or false
+                textResult.value = res
+                console.log(res);
+
+                // window.close()
+            }
+        };
+
+        function copyToClipboard() {
+            // Get the text field
+
+            if (textResult.value == '') return;
+
+            // Select the text field
+            textResult.select();
+            textResult.setSelectionRange(0, 99999); // For mobile devices
+
+            // Copy the text inside the text field
+            navigator.clipboard.writeText(textResult.value);
+
+            // Alert the copied text
+            M.toast({ text: 'Text copied to clipboard: ' + textResult.value })
+            // alert("Copied the text: " + copyText.value);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            cameraButton.click()
+        }, false);
+    </script>
+</body>
+
+</html>

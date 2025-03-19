@@ -1,0 +1,22 @@
+# 1️⃣ Disable directory listing (Prevent users from seeing file lists)
+Options -Indexes
+# 2️⃣ Block direct access to .env (Security: Prevent exposing sensitive data)
+<FilesMatch "^\.env">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# 3️⃣ Force all requests to go through index.php (except existing files/folders)
+RewriteEngine On
+
+# If the requested URL is not a file or directory, send it to index.php
+DirectoryIndex index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [L,QSA]
+
+# 4️⃣ Protect .htaccess itself from being accessed
+<Files ".htaccess">
+    Order allow,deny
+    Deny from all
+</Files>
