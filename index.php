@@ -64,9 +64,23 @@ $origin = htmlspecialchars($_SERVER["REQUEST_SCHEME"] . "://" . $_SERVER["HTTP_H
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
     <meta name="robots" content="noindex">
     <title>Popup-API Documentation</title>
+    <!-- Standard Meta Tags -->
+    <link rel="icon" type="image/x-icon" href="/assets/img/logo.jpeg">
+    <link rel="apple-touch-icon" type="image/x-icon" href="/assets/img/logo.jpeg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="title" content="Popup-API Documentation">
+    <meta name="description" content="Comprehensive documentation for the Popup-API. Learn how to call and manage popups in your web applications.">
+    <meta name="keywords" content="Popup-API, JavaScript, Web Development, Web API, Documentation">
+    <meta name="author" content="&#169; TIF Territory 3">
+
+    <meta property="og:title" content="Popup-API Documentation">
+    <meta property="og:description" content="Comprehensive documentation for the Popup-API. Learn how to call and manage popups in your web applications.">
+    <meta property="og:image" content="/assets/img/logo.jpeg">
+    <meta property="og:url" content="<?= $origin ?>/popup-api">
+    <meta property="og:type" content="website">
     <!--Import Google Icon Font-->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- Compiled and minified CSS -->
