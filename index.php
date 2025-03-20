@@ -81,7 +81,7 @@ $origin = htmlspecialchars($_SERVER["REQUEST_SCHEME"] . "://" . $_SERVER["HTTP_H
 
     <meta property="og:title" content="Popup-API Documentation">
     <meta property="og:description" content="Comprehensive documentation for the Popup-API. Learn how to call and manage popups in your web applications.">
-    <meta property="og:image" content="/assets/img/logo.jpeg">
+    <meta property="og:image" content="favicon/favicon-96x96.png">
     <meta property="og:url" content="<?= $origin ?>/popup-api">
     <meta property="og:type" content="website">
     <!--Import Google Icon Font-->
