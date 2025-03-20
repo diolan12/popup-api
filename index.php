@@ -67,8 +67,11 @@ $origin = htmlspecialchars($_SERVER["REQUEST_SCHEME"] . "://" . $_SERVER["HTTP_H
     <meta name="robots" content="noindex">
     <title>Popup-API Documentation</title>
     <!-- Standard Meta Tags -->
-    <link rel="icon" type="image/x-icon" href="/assets/img/logo.jpeg">
-    <link rel="apple-touch-icon" type="image/x-icon" href="/assets/img/logo.jpeg">
+    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg" />
+    <link rel="shortcut icon" href="favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
+    <link rel="manifest" href="site.webmanifest" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="title" content="Popup-API Documentation">
