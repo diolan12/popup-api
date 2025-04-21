@@ -128,7 +128,7 @@
         async function setupCamera() {
             closeMedia()
             console.log(frontFacing ? 'user' : 'environment');
-            clearInterval(runnable)
+            // clearInterval(runnable)
             if (!runnable) runnable = setInterval(tick, 500)
             stream = await navigator.mediaDevices.getUserMedia({
                 video: {
