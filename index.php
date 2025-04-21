@@ -346,7 +346,7 @@ window.addEventListener("message", (event) => {
         })
         popupQrcode.addEventListener('click', (evt) => {
             console.log('click', evt);
-            popcam = window.open('?gateway=qr-reader', 'popup-api', params);
+            popcam = window.open('?gateway=qr-reader&autoclose', 'popup-api', params);
             if (!popcam) alert("Please allow popups for this website");
         })
         popupLocation.addEventListener('click', (evt) => {

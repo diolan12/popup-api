@@ -87,6 +87,7 @@
         const video = document.querySelector("#video");
         const canvas = document.querySelector("#qr-canvas");
         const qrReader = window.qrcode;
+        let autoclose = false
         let frontFacing = false;
         let torchOn = false;
         let stream, runnable;
@@ -165,17 +166,19 @@
         qrReader.callback = function (res) {
             if (res) {
                 beep()
-                // clearInterval(runnable)
-                // closeMedia()
                 dataPayload = {
                     type: 'qr-reader',
                     payload: res
                 }
-                // window.opener?.postMessage(data, '*'); //or false
                 textResult.value = res
                 console.log(res);
-
-                // window.close()
+                
+                if (autoclose) {
+                    clearInterval(runnable)
+                    closeMedia()
+                    postOpener()
+                    window.close()
+                }
             }
         };
 
@@ -197,6 +200,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            autoclose = urlParams.has('autoclose') ?? false
             cameraButton.click()
         }, false);
     </script>
